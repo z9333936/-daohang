@@ -1,9 +1,9 @@
-<DOCTYPE htmlhtml
-<html 语言="zh-CN">
-<头部>
-    <元数据 字符集="UTF-8">
-    <元数据 名称="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的导航</title>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的导航站</title>
     <style>
         * {
             margin: 0;
@@ -27,7 +27,6 @@
         header {
             text-align: center;
             margin-bottom: 50px;
-            position: relative;
         }
 
         header h1 {
@@ -40,16 +39,6 @@
         header p {
             color: #888;
             font-size: 14px;
-        }
-        .admin-btn{
-            position:absolute;
-            right:10px;
-            top:0;
-            padding:6px 12px;
-            border:1px solid #ccc;
-            border-radius:8px;
-            background:#fff;
-            光标:指针;
         }
 
         .grid {
@@ -66,10 +55,10 @@
             color: #333;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             transition: all 0.25s ease;
-<!DOCTYPE html>DOCTYPE: block;
+            display: block;
         }
 
-htmlcard:hover {
+        .card:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }
@@ -92,30 +81,6 @@ htmlcard:hover {
             margin-top: 60px;
             color: #bbb;
             font-size: 12px;
-        }
-:#fff;/* 后台面板样式 */
-        .admin-panel{
-            display:none;
-            background:#fff;
-            padding:20px;
-            border-radius:12px;
-            margin-bottom:30px;
-        }
-        .admin-panel textarea{
-            width:100%;
-            height:320px;
-            padding:12px;
-            margin:10px 0;
-            font-family:monospace;
-        }
-        .admin-panel input{
-easepadding:8px;
-            width:220px;
-        }
-        .admin-panel button{
-            padding:8px 16px;
-            margin:4px;
-            cursor:pointer;
         }
 
         @media (max-width: 600px) {
@@ -140,101 +105,48 @@ easepadding:8px;
         <header>
             <h1>我的导航</h1>
             <p>常用站点一键直达</p>
-            <button class="admin-btn" onclick="openAdmin()">管理</button>
         </header>
-
-        <!-- 后台管理面板 -->
-        <div class="admin-panel" id="adminBox">
-            <h3>后台编辑（格式：#网站名|链接）</h3>
-            <p>一行一条，示例：<br>#Github|https://github.com<br>#B站|https://bilibili.com</p>
-            <input type="password" id="adminPwd" placeholder="输入管理密码">
-            <textarea id="linkText"></textarea>
-            <br>
-            <button onclick="loadLinks()">读取现有</button>
-            <button onclick="saveLinks()">保存</button>
-            <span id="msg"></span>
-        </div>
 
         <div class="grid" id="linkGrid"></div>
 
         <footer>
-            © My Links · Powered by Cloudflare
+            © 2025 My Links · Powered by Cloudflare
         </footer>
     </div>
 
     <script>
-        // ========= 替换成你的Worker域名！！========
-        const WORKER_API = "gaohang.zjbcc.cc.cd";
-        // ======================================
+        // ========== 在这里添加/删除链接，格式：名称, 地址, 描述 ==========
+        const links = [
+            { name: "Google", url: "https://www.google.com", desc: "搜索引擎" },
+            { name: "GitHub", url: "https://github.com", desc: "代码托管" },
+            { name: "知乎", url: "https://www.zhihu.com", desc: "问答社区" },
+            { name: "B站", url: "https://www.bilibili.com", desc: "视频平台" },
+            { name: "Cloudflare", url: "https://www.cloudflare.com", desc: "CDN服务" },
+            { name: "Vercel", url: "https://vercel.com", desc: "前端部署" }
+        ];
+        // ==============================================================
+
         const grid = document.getElementById("linkGrid");
 
-        // 打开后台面板
-        function openAdmin(){
-            const box = document.getElementById("adminBox");
-            box.style.display = box.style.display === "block" ? "none" : "block";
-        }
+        links.forEach(item => {
+            const a = document.createElement("a");
+            a.className = "card";
+            a.href = item.url;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
 
-        // 从KV读取文本
-        async function loadLinks(){
-            const res = await fetch(`${WORKER_API}/api/get`);
-            const txt = await res.text();
-            document.getElementById("linkText").value = txt;
-            document.getElementById("msg").innerText="已加载";
-        }
+            const title = document.createElement("div");
+            title.className = "card-title";
+            title.textContent = item.name;
 
-        // 保存到KV
-        async function saveLinks(){
-            const pwd = document.getElementById("adminPwd").value;
-            const content = document.getElementById("linkText").value;
-            const resp = await fetch(`${WORKER_API}/api/save`,{
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify({pwd, content})
-            });
-            const ret = await resp.text();
-            document.getElementById("msg").innerText = ret;
-            // 保存成功自动刷新卡片
-            if(ret === "ok"){
-                renderCards(content);
-            }
-        }
+            const desc = document.createElement("div");
+            desc.className = "card-desc";
+            desc.textContent = item.desc || item.url;
 
-        // 解析文本渲染卡片（#名称|url 一行一条）
-        function renderCards(text){
-            grid.innerHTML="";
-            const lines = text.split("\n");
-            lines.forEach(line=>{
-                const l = line.trim();
-                if(!l || !l.startsWith("#")) return;
-                const [name, url] = l.replace("#","").split("|");
-                if(!name || !url) return;
-                // 卡片渲染，沿用你原来样式
-                const a = document.createElement("a");
-                a.className = "card";
-                a.href = url.trim();
-                a.target = "_blank";
-                a.rel = "noopener noreferrer";
-
-                const title = document.createElement("div");
-                title.className = "card-title";
-                title.textContent = name.trim();
-
-                const desc = document.createElement("div");
-                desc.className = "card-desc";
-                desc.textContent = url.trim();
-
-                a.appendChild(title);
-                a.appendChild(desc);
-                grid.appendChild(a);
-            })
-        }
-
-        // 页面加载自动读取链接渲染
-        (async ()=>{
-            const res = await fetch(`${WORKER_API}/api/get`);
-            const raw = await res.text();
-            renderCards(raw);
-        })()
+            a.appendChild(title);
+            a.appendChild(desc);
+            grid.appendChild(a);
+        });
     </script>
 </body>
 </html>
